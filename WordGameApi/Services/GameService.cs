@@ -26,7 +26,7 @@ public class GameService
         {
             WordLength = wordLength,
             TargetWord = word.ToLowerInvariant(),
-            MaxAttempts = 6
+            // MaxAttempts = 6
         };
 
         _games[game.Id] = game;

@@ -14,12 +14,16 @@ public enum GameStatus
     Lost
 }
 
+
 public class Game
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public int WordLength { get; init; }
     public required string TargetWord { get; init; } // stored lowercase, never sent to client until game ends
-    public int MaxAttempts { get; init; } = 6;
+
+    // MaxAttempts is derived from the WordLength; compute at runtime to avoid
+    // referencing instance fields in a field initializer.
+    public int MaxAttempts => WordLength + 1;
     public List<string> Guesses { get; } = new();
     public List<LetterResult[]> Results { get; } = new();
     public GameStatus Status { get; set; } = GameStatus.InProgress;
