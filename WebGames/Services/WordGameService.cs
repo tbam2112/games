@@ -1,14 +1,14 @@
 using System.Collections.Concurrent;
-using WordGameApi.Models;
+using WebGames.Models;
 
-namespace WordGameApi.Services;
+namespace WebGames.Services;
 
-public class GameService
+public class WordGameService
 {
     private readonly ConcurrentDictionary<Guid, Game> _games = new();
     private readonly IWordProvider _wordProvider;
 
-    public GameService(IWordProvider wordProvider)
+    public WordGameService(IWordProvider wordProvider)
     {
         _wordProvider = wordProvider;
     }

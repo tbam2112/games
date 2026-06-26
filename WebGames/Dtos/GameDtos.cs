@@ -1,6 +1,6 @@
-using WordGameApi.Models;
+using WebGames.Models;
 
-namespace WordGameApi.Dtos;
+namespace WebGames.Dtos;
 
 public record StartGameRequest(int WordLength);
 

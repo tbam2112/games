@@ -1,4 +1,4 @@
-namespace WordGameApi.Models;
+namespace WebGames.Models;
 
 public enum LetterResult
 {

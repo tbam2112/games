@@ -1,15 +1,15 @@
-using WordGameApi.Dtos;
-using WordGameApi.Models;
-using WordGameApi.Services;
+using WebGames.Dtos;
+using WebGames.Models;
+using WebGames.Services;
 
-namespace WordGameApi.Api;
+namespace WebGames.Api;
 
 public static class WordGameEndpoints
 {
     public static void MapWordGameEndpoints(this WebApplication app)
     {
         // Start a new game for a given word length (3-8 letters)
-        app.MapPost("/api/games", async (StartGameRequest request, GameService games) =>
+        app.MapPost("/api/games", async (StartGameRequest request, WordGameService games) =>
         {
             try
             {
@@ -23,7 +23,7 @@ public static class WordGameEndpoints
         });
 
         // Submit a guess for an in-progress game
-        app.MapPost("/api/games/{id}/guess", async (Guid id, GuessRequest request, GameService games) =>
+        app.MapPost("/api/games/{id}/guess", async (Guid id, GuessRequest request, WordGameService games) =>
         {
             var (success, error, results) = await games.SubmitGuessAsync(id, request.Guess);
 
@@ -45,7 +45,7 @@ public static class WordGameEndpoints
         });
 
         // Get the current state of a game (e.g. on page refresh)
-        app.MapGet("/api/games/{id}", (Guid id, GameService games) =>
+        app.MapGet("/api/games/{id}", (Guid id, WordGameService games) =>
         {
             var game = games.GetGame(id);
             if (game is null) return Results.NotFound();

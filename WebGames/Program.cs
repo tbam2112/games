@@ -1,10 +1,10 @@
-using WordGameApi.Api;
-using WordGameApi.Services;
+using WebGames.Api;
+using WebGames.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<IWordProvider, DictionaryWordProvider>();
-builder.Services.AddSingleton<GameService>();
+builder.Services.AddSingleton<WordGameService>();
 
 var app = builder.Build();
 
