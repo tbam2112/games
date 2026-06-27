@@ -1,0 +1,73 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+#record {
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.error {
+  color: red;
+}
+
+/* A single row of letter tiles representing one guess */
+.guess-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+/* One letter tile */
+.tile {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Color-coded feedback, matching the LetterResult enum from the backend */
+.tile-correct {
+  background-color: #6aaa64; /* green */
+  color: white;
+  border-color: #6aaa64;
+}
+
+.tile-present {
+  background-color: #c9b458; /* yellow */
+  color: white;
+  border-color: #c9b458;
+}
+
+.tile-absent {
+  background-color: #787c7e; /* gray */
+  color: white;
+  border-color: #787c7e;
+}
+
+#guess-form {
+  margin-top: 16px;
+}
+
+#guess-input {
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+#result-screen button {
+  margin: 4px;
+}

@@ -1,13 +1,51 @@
 <!DOCTYPE html>
-<html>
-<head><title>Word Game API</title></head>
-<body style="font-family: sans-serif; max-width: 600px; margin: 60px auto;">
-  <h1>Word Game API is running</h1>
-  <p>The frontend isn't built yet. Try the API directly, e.g.:</p>
-  <pre>
-POST /api/games          { "wordLength": 5 }
-POST /api/games/{id}/guess   { "guess": "apple" }
-GET  /api/games/{id}
-  </pre>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Word Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>Word Game</h1>
+
+  <!-- Running win/loss record for this browser session -->
+  <div id="record">Wins: 0 &nbsp; Losses: 0</div>
+
+  <!-- Screen 1: pick a difficulty and start a game -->
+  <section id="setup-screen">
+    <h2>Choose a difficulty</h2>
+    <label for="word-length">Word length (3-15 letters):</label>
+    <input type="number" id="word-length" min="3" max="15" value="5" />
+    <button id="start-button">Start Game</button>
+    <p id="setup-error" class="error"></p>
+  </section>
+
+  <!-- Screen 2: the actual game board -->
+  <section id="game-screen" class="hidden">
+    <p>Word length: <span id="game-word-length"></span></p>
+    <p>Attempt <span id="attempts-used">0</span> of <span id="max-attempts"></span></p>
+
+    <!-- Past guesses get added here as rows of letter tiles -->
+    <div id="guess-history"></div>
+
+    <form id="guess-form">
+      <input type="text" id="guess-input" autocomplete="off" />
+      <button type="submit">Guess</button>
+    </form>
+
+    <p id="game-message"></p>
+  </section>
+
+  <!-- Screen 3: shown after a win or loss -->
+  <section id="result-screen" class="hidden">
+    <h2 id="result-heading"></h2>
+    <p id="result-word"></p>
+    <button id="continue-button">Continue (same difficulty)</button>
+    <button id="change-difficulty-button">Change Difficulty</button>
+    <button id="quit-button">Quit</button>
+  </section>
+
+  <script src="app.js"></script>
 </body>
 </html>
