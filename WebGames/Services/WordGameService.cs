@@ -15,9 +15,9 @@ public class WordGameService
 
     public async Task<Game> StartGameAsync(int wordLength, CancellationToken ct = default)
     {
-        if (wordLength < 3 || wordLength > 8)
+        if (wordLength < 3 || wordLength >= 15)
         {
-            throw new ArgumentOutOfRangeException(nameof(wordLength), "Word length must be between 3 and 8.");
+            throw new ArgumentOutOfRangeException(nameof(wordLength), "Word length must be between 3 and 15.");
         }
 
         var word = await _wordProvider.GetRandomWordAsync(wordLength, ct);
