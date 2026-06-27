@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using WebGames.Models;
+using GamesCore.Models;
 
 namespace GamesCore.Services;
 

@@ -1,4 +1,4 @@
-using WebGames.Models;
+using GamesCore.Models;
 
 namespace WebGames.Dtos;
 

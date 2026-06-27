@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="GamesCore/GamesCore.csproj" />
+  <Project Path="WebGames/WebGames.csproj" />
+</Solution>

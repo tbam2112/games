@@ -1,6 +1,6 @@
 using WebGames.Dtos;
-using WebGames.Models;
-using WebGames.Services;
+using GamesCore.Services;
+using GamesCore.Models;
 
 namespace WebGames.Api;
 
