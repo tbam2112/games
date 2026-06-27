@@ -1,4 +1,4 @@
-namespace WebGames.Services;
+namespace GamesCore.Services;
 
 public interface IWordProvider
 {

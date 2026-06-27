@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WebGames.Models
+namespace GamesCore.Models
 {
     public class AppUser
     {

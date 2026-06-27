@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using WebGames.Models;
 
-namespace WebGames.Services;
+namespace GamesCore.Services;
 
 public class WordGameService
 {
@@ -15,7 +15,7 @@ public class WordGameService
 
     public async Task<Game> StartGameAsync(int wordLength, CancellationToken ct = default)
     {
-        if (wordLength < 3 || wordLength >= 15)
+        if (wordLength < 3 || wordLength > 15)
         {
             throw new ArgumentOutOfRangeException(nameof(wordLength), "Word length must be between 3 and 15.");
         }

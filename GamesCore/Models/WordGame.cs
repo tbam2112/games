@@ -1,4 +1,4 @@
-namespace WebGames.Models;
+namespace GamesCore.Models;
 
 public enum LetterResult
 {
