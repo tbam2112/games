@@ -174,8 +174,8 @@ function addGuessRow(guess, results) {
 // ("Correct") or a number (2), depending on serialization settings —
 // this handles both so the frontend doesn't break either way.
 function letterResultToCssClass(result) {
-  if (result === "Correct" || result === 2) return "tile-correct";
-  if (result === "Present" || result === 1) return "tile-present";
+  if (result === "Correct") return "tile-correct";
+  if (result === "Present") return "tile-present";
   return "tile-absent";
 }
 

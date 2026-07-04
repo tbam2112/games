@@ -37,7 +37,7 @@ public class DictionaryWordProvider : IWordProvider
 
     public async Task<string> GetRandomWordAsync(int length, CancellationToken ct = default)
     {
-        const int maxLength = 15; // random-word-api has a max length of 15.
+        // const int maxLength = 15; // random-word-api has a max length of 15.
         try
         {
             // random-word-api returns a JSON array of words, e.g. ["apple"]

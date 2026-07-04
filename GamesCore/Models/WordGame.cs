@@ -1,12 +1,16 @@
 namespace GamesCore.Models;
 
+using System.Text.Json.Serialization;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum LetterResult
 {
-    Absent,   // letter not in the word
-    Present,  // letter in the word, wrong position
-    Correct   // letter in the word, right position
+    Absent,
+    Present,
+    Correct
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum GameStatus
 {
     InProgress,
