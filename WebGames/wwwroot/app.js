@@ -105,6 +105,8 @@ async function startGame(wordLength) {
 
     // Reset keyboard state for the new game
     letterResults = {};
+    console.log("about to build keyboard"); // temporary debug
+
     buildKeyboard();
 
     // showScreen(gameScreen);
@@ -158,7 +160,6 @@ guessForm.addEventListener("submit", async (event) => {
     // data looks like: { results, status, attemptsUsed, maxAttempts, targetWord }
     addGuessRow(guess, data.results);
 
-    addGuessRow(guess, data.results);
     updateKeyboard(guess, data.results); // color the keyboard keys
     attemptsUsedLabel.textContent = data.attemptsUsed;
     attemptsUsedLabel.textContent = data.attemptsUsed;
@@ -205,6 +206,8 @@ function letterResultToCssClass(result) {
 // Builds the visual keyboard in QWERTY layout.
 // Called at the start of each game to reset all keys to default gray.
 function buildKeyboard() {
+    console.log("buildKeyboard called"); // temporary debug line
+
   // QWERTY rows — standard layout
   const rows = [
     ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],

@@ -106,13 +106,14 @@ body {
 
 /* Reuse the same color classes as the tiles */
 .key.tile-correct {
-  color: white;
+  /* color: white; */
 }
 
 .key.tile-present {
-  color: white;
+  /* color: white; */
 }
 
 .key.tile-absent {
+  background-color: #787c7e; /* match absent tile color */
   color: white;
 }
