@@ -60,10 +60,14 @@ public class WordGameService
             return (false, "Guess must contain only letters.", null);
         }
 
-        var isReal = await _wordProvider.IsRealWordAsync(guess, ct);
-        if (!isReal)
+        // If the guess is the target word it's always valid — skip the API call
+        if (guess != game.TargetWord)
         {
-            return (false, "Not a recognized word.", null);
+            var isReal = await _wordProvider.IsRealWordAsync(guess, ct);
+            if (!isReal)
+            {
+                return (false, "Not a recognized word.", null);
+            }
         }
 
         var results = ScoreGuess(guess, game.TargetWord);
