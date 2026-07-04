@@ -26,17 +26,12 @@
     <p>Word length: <span id="game-word-length"></span></p>
     <p>Attempt <span id="attempts-used">0</span> of <span id="max-attempts"></span></p>
 
-    <!-- Past guesses get added here as rows of letter tiles -->
-    <div id="guess-history"></div>
-
-    <form id="guess-form">
-      <input type="text" id="guess-input" autocomplete="off" />
-      <button type="submit">Guess</button>
-    </form>
+    <!-- Full grid of tiles — built dynamically when a game starts -->
+    <div id="guess-board"></div>
 
     <p id="game-message"></p>
 
-        <!-- Keyboard tracker: shows which letters have been used and their best result -->
+    <!-- Keyboard tracker: shows which letters have been used and their best result -->
     <div id="keyboard"></div>
 
   </section>

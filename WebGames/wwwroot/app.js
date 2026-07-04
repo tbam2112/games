@@ -7,8 +7,6 @@
 // ===========================================================
 
 // --- Grab references to all the HTML elements we'll need ---
-// Doing this once at the top means we don't have to repeat
-// document.getElementById(...) everywhere below.
 
 const setupScreen = document.getElementById("setup-screen");
 const gameScreen = document.getElementById("game-screen");
@@ -21,9 +19,7 @@ const setupError = document.getElementById("setup-error");
 const gameWordLengthLabel = document.getElementById("game-word-length");
 const attemptsUsedLabel = document.getElementById("attempts-used");
 const maxAttemptsLabel = document.getElementById("max-attempts");
-const guessHistory = document.getElementById("guess-history");
-const guessForm = document.getElementById("guess-form");
-const guessInput = document.getElementById("guess-input");
+const guessBoard = document.getElementById("guess-board");
 const gameMessage = document.getElementById("game-message");
 
 const resultHeading = document.getElementById("result-heading");
@@ -33,34 +29,29 @@ const changeDifficultyButton = document.getElementById("change-difficulty-button
 const quitButton = document.getElementById("quit-button");
 
 const recordDisplay = document.getElementById("record");
-
 const keyboard = document.getElementById("keyboard");
 
-
-
 // --- App state ---
-// These variables track everything happening "right now."
-// Since we're not persisting anything yet, this all lives in
-// memory and resets if the page is refreshed.
 
-let currentGameId = null;   // the game we're currently playing
-let currentWordLength = 5;  // remembered so "Continue" can reuse it
+let currentGameId = null;
+let currentWordLength = 5;
 let wins = 0;
 let losses = 0;
-
-// Tracks the best result seen for each letter this game.
-// "best" means: Correct > Present > Absent — once a letter is
-// green we never downgrade it back to yellow or gray.
 let letterResults = {};
 
-// --- Small helper functions for showing/hiding screens ---
-// Only one "screen" should be visible at a time.
+// Tile grid state — tracks position and the DOM elements themselves
+// tileGrid[row][col] gives us the exact tile div to update
+let tileGrid = [];
+let currentRow = 0;  // which attempt row we're on
+let currentCol = 0;  // which tile in that row we're typing into
+let isAcceptingInput = false; // false while waiting for API or game is over
+
+// --- Helper functions ---
 
 function showScreen(screenToShow) {
   setupScreen.classList.add("hidden");
   gameScreen.classList.add("hidden");
   resultScreen.classList.add("hidden");
-
   screenToShow.classList.remove("hidden");
 }
 
@@ -73,7 +64,7 @@ function updateRecordDisplay() {
 // ===========================================================
 
 async function startGame(wordLength) {
-  setupError.textContent = ""; // clear any old error message
+  setupError.textContent = "";
 
   try {
     const response = await fetch("/api/games", {
@@ -89,30 +80,25 @@ async function startGame(wordLength) {
     }
 
     const data = await response.json();
-    // data looks like: { gameId, wordLength, maxAttempts }
+    // data: { gameId, wordLength, maxAttempts }
 
     currentGameId = data.gameId;
     currentWordLength = data.wordLength;
+    currentRow = 0;
+    currentCol = 0;
+    isAcceptingInput = true;
 
-    // Reset the game screen for this new game
-    guessHistory.innerHTML = "";
     gameMessage.textContent = "";
     attemptsUsedLabel.textContent = "0";
     maxAttemptsLabel.textContent = data.maxAttempts;
     gameWordLengthLabel.textContent = data.wordLength;
-    guessInput.value = "";
-    guessInput.maxLength = data.wordLength;
 
-    // Reset keyboard state for the new game
+    buildGuessBoard(data.wordLength, data.maxAttempts);
+
     letterResults = {};
-    console.log("about to build keyboard"); // temporary debug
-
     buildKeyboard();
 
-    // showScreen(gameScreen);
-
     showScreen(gameScreen);
-    guessInput.focus();
   } catch (err) {
     setupError.textContent = "Network error — is the server running?";
   }
@@ -130,14 +116,120 @@ startButton.addEventListener("click", () => {
 });
 
 // ===========================================================
+// Building the guess board
+// ===========================================================
+
+function buildGuessBoard(wordLength, maxAttempts) {
+  guessBoard.innerHTML = "";
+  tileGrid = [];
+
+  // Only build the first row — new rows are added after each guess
+  addNewRow(wordLength);
+}
+
+// Adds a single new empty row to the board for the current attempt
+function addNewRow(wordLength) {
+  const rowDiv = document.createElement("div");
+  rowDiv.className = "guess-row";
+
+  tileGrid[currentRow] = [];
+
+  for (let col = 0; col < wordLength; col++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    rowDiv.appendChild(tile);
+    tileGrid[currentRow][col] = tile;
+  }
+
+  guessBoard.appendChild(rowDiv);
+  highlightActiveTile();
+}
+
+// Marks the current tile as active (slightly darker border)
+function highlightActiveTile() {
+  // First clear active state from all tiles in the current row
+  if (tileGrid[currentRow]) {
+    for (const tile of tileGrid[currentRow]) {
+      tile.classList.remove("tile-active");
+    }
+  }
+
+  // Then mark just the current position as active
+  if (tileGrid[currentRow] && tileGrid[currentRow][currentCol]) {
+    tileGrid[currentRow][currentCol].classList.add("tile-active");
+  }
+}
+
+// ===========================================================
+// Keyboard input — typing goes directly into tiles
+// ===========================================================
+
+// Listen for keypresses anywhere on the page while the game screen is active.
+// This means the player never needs to click a specific input box — just type.
+document.addEventListener("keydown", (event) => {
+  if (!isAcceptingInput) return; // ignore input while API call is in flight or game over
+
+  const key = event.key;
+
+  if (key === "Enter") {
+    submitGuess();
+  } else if (key === "Backspace") {
+    deleteLetter();
+  } else if (key.length === 1 && key.match(/[a-zA-Z]/)) {
+    // Only accept single letter keys (ignores Tab, Shift, F1, etc.)
+    typeLetter(key.toLowerCase());
+  }
+});
+
+// Places a letter into the current tile and advances the cursor
+function typeLetter(letter) {
+  if (currentCol >= currentWordLength) return; // row is full, ignore
+
+  const tile = tileGrid[currentRow][currentCol];
+  tile.textContent = letter.toUpperCase();
+  tile.classList.add("tile-filled");
+  tile.classList.remove("tile-active");
+
+  currentCol++;
+  highlightActiveTile();
+}
+
+// Removes the last typed letter and moves the cursor back
+function deleteLetter() {
+  if (currentCol <= 0) return; // nothing to delete
+
+  currentCol--;
+
+  const tile = tileGrid[currentRow][currentCol];
+  tile.textContent = "";
+  tile.classList.remove("tile-filled");
+
+  highlightActiveTile();
+}
+
+// ===========================================================
 // Submitting a guess
 // ===========================================================
 
-guessForm.addEventListener("submit", async (event) => {
-  event.preventDefault(); // stop the form from reloading the page
+async function submitGuess() {
+  // Build the guess string from the current row's tile contents
+  const guess = tileGrid[currentRow]
+    .map(tile => tile.textContent.toLowerCase())
+    .join("");
 
-  const guess = guessInput.value.trim();
-  if (guess.length === 0) return;
+  if (guess.length < currentWordLength) {
+    gameMessage.textContent = `Word must be ${currentWordLength} letters.`;
+    return;
+  } else {
+      currentRow++;
+      currentCol = 0;
+      addNewRow(currentWordLength);
+      isAcceptingInput = true;
+      console.log("isAcceptingInput:", isAcceptingInput); // temporary debug
+    }
+
+  isAcceptingInput = false; // block input while waiting for the API
+  gameMessage.textContent = "";
 
   try {
     const response = await fetch(`/api/games/${currentGameId}/guess`, {
@@ -149,50 +241,42 @@ guessForm.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      // Backend rejected the guess (wrong length, not a real word, etc.)
       gameMessage.textContent = data.error || "Invalid guess.";
+      isAcceptingInput = true; // re-enable input so they can try again
       return;
     }
 
-    gameMessage.textContent = "";
-    guessInput.value = "";
-
-    // data looks like: { results, status, attemptsUsed, maxAttempts, targetWord }
-    addGuessRow(guess, data.results);
-
-    updateKeyboard(guess, data.results); // color the keyboard keys
-    attemptsUsedLabel.textContent = data.attemptsUsed;
+    // Color the tiles in the current row based on results
+    colorCurrentRow(data.results);
+    updateKeyboard(guess, data.results);
     attemptsUsedLabel.textContent = data.attemptsUsed;
 
-    if (data.status === "Won" || data.status === 1) {
+    if (data.status === "Won") {
       handleGameOver(true, data.targetWord);
-    } else if (data.status === "Lost" || data.status === 2) {
+    } else if (data.status === "Lost") {
       handleGameOver(false, data.targetWord);
+    } else {
+      // Move to the next row and re-enable input
+      currentRow++;
+      currentCol = 0;
+      highlightActiveTile();
+      isAcceptingInput = true;
     }
-    // otherwise status is still "InProgress" — just keep playing
   } catch (err) {
     gameMessage.textContent = "Network error — please try again.";
+    isAcceptingInput = true;
   }
-});
-
-// Builds one row of colored letter tiles for a submitted guess.
-function addGuessRow(guess, results) {
-  const row = document.createElement("div");
-  row.className = "guess-row";
-
-  for (let i = 0; i < guess.length; i++) {
-    const tile = document.createElement("div");
-    tile.className = "tile " + letterResultToCssClass(results[i]);
-    tile.textContent = guess[i];
-    row.appendChild(tile);
-  }
-
-  guessHistory.appendChild(row);
 }
 
-// The backend's LetterResult enum can come through as either a string
-// ("Correct") or a number (2), depending on serialization settings —
-// this handles both so the frontend doesn't break either way.
+// Colors the tiles in the current row based on the API's results array
+function colorCurrentRow(results) {
+  for (let col = 0; col < results.length; col++) {
+    const tile = tileGrid[currentRow][col];
+    tile.classList.remove("tile-active", "tile-filled");
+    tile.classList.add(letterResultToCssClass(results[col]));
+  }
+}
+
 function letterResultToCssClass(result) {
   if (result === "Correct") return "tile-correct";
   if (result === "Present") return "tile-present";
@@ -203,19 +287,14 @@ function letterResultToCssClass(result) {
 // Keyboard tracker
 // ===========================================================
 
-// Builds the visual keyboard in QWERTY layout.
-// Called at the start of each game to reset all keys to default gray.
 function buildKeyboard() {
-    console.log("buildKeyboard called"); // temporary debug line
-
-  // QWERTY rows — standard layout
   const rows = [
     ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
     ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
     ["z", "x", "c", "v", "b", "n", "m"],
   ];
 
-  keyboard.innerHTML = ""; // clear any previous keyboard
+  keyboard.innerHTML = "";
 
   for (const row of rows) {
     const rowDiv = document.createElement("div");
@@ -225,7 +304,7 @@ function buildKeyboard() {
       const key = document.createElement("div");
       key.className = "key";
       key.textContent = letter;
-      key.id = `key-${letter}`; // e.g. "key-a" so we can find it later
+      key.id = `key-${letter}`;
       rowDiv.appendChild(key);
     }
 
@@ -233,27 +312,20 @@ function buildKeyboard() {
   }
 }
 
-// Updates key colors after each guess.
-// A letter's color only ever improves: Absent → Present → Correct.
-// It never goes backward (e.g. a green key won't turn yellow on a later guess).
 function updateKeyboard(guess, results) {
-  // Result priority: higher number = better result, same order as the enum
   const priority = { "Absent": 1, "Present": 2, "Correct": 3 };
 
   for (let i = 0; i < guess.length; i++) {
     const letter = guess[i];
     const result = results[i];
 
-    // Only update if this result is better than what we've seen before
     const currentBest = letterResults[letter];
     if (!currentBest || priority[result] > priority[currentBest]) {
       letterResults[letter] = result;
     }
 
-    // Find the key element and update its CSS class
     const key = document.getElementById(`key-${letter}`);
     if (key) {
-      // Remove any existing result class before adding the new one
       key.classList.remove("tile-correct", "tile-present", "tile-absent");
       key.classList.add(letterResultToCssClass(letterResults[letter]));
     }
@@ -261,7 +333,7 @@ function updateKeyboard(guess, results) {
 }
 
 // ===========================================================
-// Game over: show result screen, update the session record
+// Game over
 // ===========================================================
 
 function handleGameOver(didWin, targetWord) {
@@ -275,6 +347,7 @@ function handleGameOver(didWin, targetWord) {
 
   updateRecordDisplay();
   resultWord.textContent = `The word was: ${targetWord.toUpperCase()}`;
+  isAcceptingInput = false;
 
   showScreen(resultScreen);
 }
@@ -284,7 +357,6 @@ function handleGameOver(didWin, targetWord) {
 // ===========================================================
 
 continueButton.addEventListener("click", () => {
-  // Same difficulty, brand new game
   startGame(currentWordLength);
 });
 
@@ -293,8 +365,7 @@ changeDifficultyButton.addEventListener("click", () => {
 });
 
 quitButton.addEventListener("click", () => {
-  // Nothing to clean up server-side (games are in-memory and harmless
-  // to just leave behind) — just send the player back to the start.
   currentGameId = null;
+  isAcceptingInput = false;
   showScreen(setupScreen);
 });
