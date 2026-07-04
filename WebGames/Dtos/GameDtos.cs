@@ -2,7 +2,9 @@ using GamesCore.Models;
 
 namespace WebGames.Dtos;
 
-public record StartGameRequest(int WordLength);
+// Difficulty: 1 (easy common words) to 5 (hard rare words)
+// Language: "en" for English, "es" for Spanish
+public record StartGameRequest(int WordLength, int Difficulty = 1, string Language = "en");
 
 public record StartGameResponse(Guid GameId, int WordLength, int MaxAttempts);
 
@@ -13,7 +15,7 @@ public record GuessResponse(
     GameStatus Status,
     int AttemptsUsed,
     int MaxAttempts,
-    string? TargetWord // only populated once Status is Won or Lost
+    string? TargetWord
 );
 
 public record GameStateResponse(

@@ -16,9 +16,6 @@ const wordLengthInput = document.getElementById("word-length");
 const startButton = document.getElementById("start-button");
 const setupError = document.getElementById("setup-error");
 
-const gameWordLengthLabel = document.getElementById("game-word-length");
-const attemptsUsedLabel = document.getElementById("attempts-used");
-const maxAttemptsLabel = document.getElementById("max-attempts");
 const guessBoard = document.getElementById("guess-board");
 const gameMessage = document.getElementById("game-message");
 
@@ -31,6 +28,9 @@ const quitButton = document.getElementById("quit-button");
 const recordDisplay = document.getElementById("record");
 const keyboard = document.getElementById("keyboard");
 
+const difficultyInput = document.getElementById("difficulty");
+const languageInput = document.getElementById("language");
+
 // --- App state ---
 
 let currentGameId = null;
@@ -38,6 +38,9 @@ let currentWordLength = 5;
 let wins = 0;
 let losses = 0;
 let letterResults = {};
+
+let currentDifficulty = 1;
+let currentLanguage = "en";
 
 // Tile grid state — tracks position and the DOM elements themselves
 // tileGrid[row][col] gives us the exact tile div to update
@@ -63,14 +66,16 @@ function updateRecordDisplay() {
 // Starting a new game
 // ===========================================================
 
-async function startGame(wordLength) {
+async function startGame(wordLength, difficulty = 1, language = "en") {
   setupError.textContent = "";
+  currentDifficulty = difficulty;
+  currentLanguage = language;
 
   try {
     const response = await fetch("/api/games", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wordLength: wordLength }),
+      body: JSON.stringify({ wordLength, difficulty, language }),
     });
 
     if (!response.ok) {
@@ -89,9 +94,6 @@ async function startGame(wordLength) {
     isAcceptingInput = true;
 
     gameMessage.textContent = "";
-    attemptsUsedLabel.textContent = "0";
-    maxAttemptsLabel.textContent = data.maxAttempts;
-    gameWordLengthLabel.textContent = data.wordLength;
 
     buildGuessBoard(data.wordLength, data.maxAttempts);
 
@@ -106,13 +108,20 @@ async function startGame(wordLength) {
 
 startButton.addEventListener("click", () => {
   const wordLength = parseInt(wordLengthInput.value, 10);
+  const difficulty = parseInt(difficultyInput.value, 10);
+  const language = languageInput.value;
 
   if (isNaN(wordLength) || wordLength < 3 || wordLength > 15) {
     setupError.textContent = "Please enter a word length between 3 and 15.";
     return;
   }
 
-  startGame(wordLength);
+  if (isNaN(difficulty) || difficulty < 1 || difficulty > 5) {
+    setupError.textContent = "Please enter a difficulty between 1 and 5.";
+    return;
+  }
+
+  startGame(wordLength, difficulty, language);
 });
 
 // ===========================================================
@@ -220,13 +229,7 @@ async function submitGuess() {
   if (guess.length < currentWordLength) {
     gameMessage.textContent = `Word must be ${currentWordLength} letters.`;
     return;
-  } else {
-      currentRow++;
-      currentCol = 0;
-      addNewRow(currentWordLength);
-      isAcceptingInput = true;
-      console.log("isAcceptingInput:", isAcceptingInput); // temporary debug
-    }
+  }
 
   isAcceptingInput = false; // block input while waiting for the API
   gameMessage.textContent = "";
@@ -242,24 +245,23 @@ async function submitGuess() {
 
     if (!response.ok) {
       gameMessage.textContent = data.error || "Invalid guess.";
-      isAcceptingInput = true; // re-enable input so they can try again
+      isAcceptingInput = true;
       return;
     }
 
     // Color the tiles in the current row based on results
     colorCurrentRow(data.results);
     updateKeyboard(guess, data.results);
-    attemptsUsedLabel.textContent = data.attemptsUsed;
 
     if (data.status === "Won") {
       handleGameOver(true, data.targetWord);
     } else if (data.status === "Lost") {
       handleGameOver(false, data.targetWord);
     } else {
-      // Move to the next row and re-enable input
+      // Move to the next row, add a new empty row, re-enable input
       currentRow++;
       currentCol = 0;
-      highlightActiveTile();
+      addNewRow(currentWordLength);
       isAcceptingInput = true;
     }
   } catch (err) {
@@ -357,7 +359,7 @@ function handleGameOver(didWin, targetWord) {
 // ===========================================================
 
 continueButton.addEventListener("click", () => {
-  startGame(currentWordLength);
+  startGame(currentWordLength, currentDifficulty, currentLanguage);
 });
 
 changeDifficultyButton.addEventListener("click", () => {

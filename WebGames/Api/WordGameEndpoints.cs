@@ -13,7 +13,7 @@ public static class WordGameEndpoints
         {
             try
             {
-                var game = await games.StartGameAsync(request.WordLength);
+                var game = await games.StartGameAsync(request.WordLength, request.Difficulty, request.Language);
                 return Results.Ok(new StartGameResponse(game.Id, game.WordLength, game.MaxAttempts));
             }
             catch (ArgumentOutOfRangeException ex)

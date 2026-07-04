@@ -9,22 +9,31 @@
 
   <h1>Totally Not Wordle</h1>
 
-  <!-- Running win/loss record for this browser session -->
-  <div id="record">Wins: 0 &nbsp; Losses: 0</div>
 
   <!-- Screen 1: pick a difficulty and start a game -->
   <section id="setup-screen">
     <h2>Choose a difficulty</h2>
+
     <label for="word-length">Word length (3-15 letters):</label>
     <input type="number" id="word-length" min="3" max="15" value="5" />
+
+    <label for="difficulty">Difficulty (1 = easy, 5 = hard):</label>
+    <input type="number" id="difficulty" min="1" max="5" value="1" />
+
+    <label for="language">Language:</label>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="es">Spanish</option>
+    </select>
+
     <button id="start-button">Start Game</button>
     <p id="setup-error" class="error"></p>
   </section>
 
   <!-- Screen 2: the actual game board -->
   <section id="game-screen" class="hidden">
-    <p>Word length: <span id="game-word-length"></span></p>
-    <p>Attempt <span id="attempts-used">0</span> of <span id="max-attempts"></span></p>
+    <!--<p>Word length: <span id="game-word-length"></span></p>
+    <p>Attempt <span id="attempts-used">0</span> of <span id="max-attempts"></span></p> -->
 
     <!-- Full grid of tiles — built dynamically when a game starts -->
     <div id="guess-board"></div>
@@ -40,6 +49,7 @@
   <section id="result-screen" class="hidden">
     <h2 id="result-heading"></h2>
     <p id="result-word"></p>
+    <div id="record">Wins: 0 &nbsp; Losses: 0</div>
     <button id="continue-button">Continue (same difficulty)</button>
     <button id="change-difficulty-button">Change Difficulty</button>
     <button id="quit-button">Quit</button>

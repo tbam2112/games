@@ -13,25 +13,29 @@ public class WordGameService
         _wordProvider = wordProvider;
     }
 
-    public async Task<Game> StartGameAsync(int wordLength, CancellationToken ct = default)
+public async Task<Game> StartGameAsync(int wordLength, int difficulty = 1, string language = "en", CancellationToken ct = default)
+{
+    if (wordLength < 3 || wordLength > 15)
     {
-        if (wordLength < 3 || wordLength > 15)
-        {
-            throw new ArgumentOutOfRangeException(nameof(wordLength), "Word length must be between 3 and 15.");
-        }
-
-        var word = await _wordProvider.GetRandomWordAsync(wordLength, ct);
-
-        var game = new Game
-        {
-            WordLength = wordLength,
-            TargetWord = word.ToLowerInvariant(),
-            // MaxAttempts = 6
-        };
-
-        _games[game.Id] = game;
-        return game;
+        throw new ArgumentOutOfRangeException(nameof(wordLength), "Word length must be between 3 and 15.");
     }
+
+    if (difficulty < 1 || difficulty > 5)
+    {
+        throw new ArgumentOutOfRangeException(nameof(difficulty), "Difficulty must be between 1 and 5.");
+    }
+
+    var word = await _wordProvider.GetRandomWordAsync(wordLength, difficulty, language, ct);
+
+    var game = new Game
+    {
+        WordLength = wordLength,
+        TargetWord = word.ToLowerInvariant(),
+    };
+
+    _games[game.Id] = game;
+    return game;
+}
 
     public Game? GetGame(Guid id) => _games.TryGetValue(id, out var game) ? game : null;
 
