@@ -34,6 +34,10 @@ const quitButton = document.getElementById("quit-button");
 
 const recordDisplay = document.getElementById("record");
 
+const keyboard = document.getElementById("keyboard");
+
+
+
 // --- App state ---
 // These variables track everything happening "right now."
 // Since we're not persisting anything yet, this all lives in
@@ -43,6 +47,11 @@ let currentGameId = null;   // the game we're currently playing
 let currentWordLength = 5;  // remembered so "Continue" can reuse it
 let wins = 0;
 let losses = 0;
+
+// Tracks the best result seen for each letter this game.
+// "best" means: Correct > Present > Absent — once a letter is
+// green we never downgrade it back to yellow or gray.
+let letterResults = {};
 
 // --- Small helper functions for showing/hiding screens ---
 // Only one "screen" should be visible at a time.
@@ -94,6 +103,12 @@ async function startGame(wordLength) {
     guessInput.value = "";
     guessInput.maxLength = data.wordLength;
 
+    // Reset keyboard state for the new game
+    letterResults = {};
+    buildKeyboard();
+
+    // showScreen(gameScreen);
+
     showScreen(gameScreen);
     guessInput.focus();
   } catch (err) {
@@ -142,6 +157,10 @@ guessForm.addEventListener("submit", async (event) => {
 
     // data looks like: { results, status, attemptsUsed, maxAttempts, targetWord }
     addGuessRow(guess, data.results);
+
+    addGuessRow(guess, data.results);
+    updateKeyboard(guess, data.results); // color the keyboard keys
+    attemptsUsedLabel.textContent = data.attemptsUsed;
     attemptsUsedLabel.textContent = data.attemptsUsed;
 
     if (data.status === "Won" || data.status === 1) {
@@ -177,6 +196,65 @@ function letterResultToCssClass(result) {
   if (result === "Correct") return "tile-correct";
   if (result === "Present") return "tile-present";
   return "tile-absent";
+}
+
+// ===========================================================
+// Keyboard tracker
+// ===========================================================
+
+// Builds the visual keyboard in QWERTY layout.
+// Called at the start of each game to reset all keys to default gray.
+function buildKeyboard() {
+  // QWERTY rows — standard layout
+  const rows = [
+    ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+    ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+    ["z", "x", "c", "v", "b", "n", "m"],
+  ];
+
+  keyboard.innerHTML = ""; // clear any previous keyboard
+
+  for (const row of rows) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "keyboard-row";
+
+    for (const letter of row) {
+      const key = document.createElement("div");
+      key.className = "key";
+      key.textContent = letter;
+      key.id = `key-${letter}`; // e.g. "key-a" so we can find it later
+      rowDiv.appendChild(key);
+    }
+
+    keyboard.appendChild(rowDiv);
+  }
+}
+
+// Updates key colors after each guess.
+// A letter's color only ever improves: Absent → Present → Correct.
+// It never goes backward (e.g. a green key won't turn yellow on a later guess).
+function updateKeyboard(guess, results) {
+  // Result priority: higher number = better result, same order as the enum
+  const priority = { "Absent": 1, "Present": 2, "Correct": 3 };
+
+  for (let i = 0; i < guess.length; i++) {
+    const letter = guess[i];
+    const result = results[i];
+
+    // Only update if this result is better than what we've seen before
+    const currentBest = letterResults[letter];
+    if (!currentBest || priority[result] > priority[currentBest]) {
+      letterResults[letter] = result;
+    }
+
+    // Find the key element and update its CSS class
+    const key = document.getElementById(`key-${letter}`);
+    if (key) {
+      // Remove any existing result class before adding the new one
+      key.classList.remove("tile-correct", "tile-present", "tile-absent");
+      key.classList.add(letterResultToCssClass(letterResults[letter]));
+    }
+  }
 }
 
 // ===========================================================
