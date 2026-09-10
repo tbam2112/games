@@ -8,8 +8,9 @@ platforms from shared game logic.
 ```
 Games/
 ├── GamesCore/           # Shared game logic — platform-agnostic, no UI/hosting code
-│   ├── WordGame/        #   e.g. word selection, guess scoring
-│   ├── Users/           #   AppUser, Guest, Friends, Stats — shared across all platforms
+│   ├── Models/          #   Game, AppUser, etc.
+│   ├── Services/        #   WordGameService (rules/scoring), word providers
+│   ├── Resources/       #   bundled data, e.g. the local word list
 │   └── ...
 ├── WebGames/            # ASP.NET Core web app — hosts the games in-browser
 ├── MobileGames/         # Mobile app (TBD) — same games, mobile-formatted UI
@@ -39,6 +40,10 @@ accounts/stats stay consistent across platforms.
 More games to come.
 
 ## Users & Accounts
+
+**Not implemented yet** — games today are anonymous (tracked only by a
+per-game GUID, no session or sign-in). `GamesCore.Models.AppUser` exists as
+a data model but isn't wired into anything. The intended design:
 
 Every session has an `AppUser` — either:
 - **Guest** — no account, generic guest identity, play without signing in. Progress/stats aren't persisted across sessions.
@@ -71,20 +76,21 @@ The app starts at the URLs configured in `Properties/launchSettings.json`
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| `POST` | `/api/games` | Start a new game. Body: `{ "wordLength": 5 }` (3-15) |
+| `POST` | `/api/games` | Start a new game. Body: `{ "wordLength": 5, "difficulty": 1, "language": "en" }` — `wordLength` 3-15, `difficulty` 1 (common words) to 5 (rare words), `language` `"en"`/`"es"` |
 | `POST` | `/api/games/{id}/guess` | Submit a guess. Body: `{ "guess": "apple" }` |
 | `GET`  | `/api/games/{id}` | Get current game state |
 
 Word length must be between 3 and 15 letters. The number of allowed
 attempts is always `wordLength + 1`.
 
-Word selection and guess validation use a public dictionary API, with a
-small local fallback word list if that API is unreachable.
+Guess validation checks against a bundled local word list (no network
+call). Target word selection calls a public random-word API, falling back
+to a small local word list if that API is unreachable.
 
 ## Roadmap
 
-- [ ] Extract shared game logic into `GamesCore`
-- [ ] Word Game frontend (web)
+- [x] Extract shared game logic into `GamesCore`
+- [x] Word Game frontend (web)
 - [ ] User accounts / auth, Guest → registered upgrade path
 - [ ] Friends, high scores, stats, sharing
 - [ ] `MobileGames` app
