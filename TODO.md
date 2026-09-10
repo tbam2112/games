@@ -12,12 +12,6 @@ up context quickly without re-deriving it from git log.
       length instead of the requested one. Guess *validation* already covers
       3-15 via the bundled word list — this is only the target-word-selection
       fallback used when `random-word-api.herokuapp.com` is unreachable.
-- [ ] README is stale in a couple of spots: "Repo Structure" describes
-      `GamesCore/WordGame/` and `GamesCore/Users/`, but the actual layout is
-      `GamesCore/Models/` and `GamesCore/Services/`. The "Word Game API"
-      section also still says guess validation uses a public dictionary API —
-      it's fully local now (see recap below).
-
 ### New platforms (not started)
 - [ ] `MobileGames`
 - [ ] `LocalGames` (desktop, offline-first — needs local storage that syncs
@@ -45,3 +39,4 @@ Word Game (web) MVP polish pass:
   - First pass: fixed the fail-open logic (a non-2xx response was being treated as "not a real word" instead of "can't verify"), added a 2s `HttpClient` timeout, added a bundled local word-list fallback for outages
   - Final state: dropped the external API from guess validation entirely — guesses are checked against a bundled word list (`GamesCore/Resources/words.txt`, ~211k words filtered from macOS's `/usr/share/dict/words`, embedded resource, loaded once into a `HashSet`). Guess submission is now single-digit ms with no network call.
   - `random-word-api.herokuapp.com` is still used once per game to pick the *target* word — untouched, has its own small local fallback (see Open above for its length-coverage gap)
+- Updated README to match all of the above (repo structure, API docs, roadmap checkboxes) and marked "Users & Accounts" as planned/not-yet-implemented rather than current behavior
