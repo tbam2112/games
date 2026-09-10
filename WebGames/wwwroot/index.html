@@ -7,6 +7,8 @@
 </head>
 <body>
 
+  <button id="theme-toggle" aria-label="Switch to dark theme">🌙</button>
+
   <h1>Totally Not Wordle</h1>
 
 
@@ -17,8 +19,12 @@
     <label for="word-length">Word length (3-15 letters):</label>
     <input type="number" id="word-length" min="3" max="15" value="5" />
 
-    <label for="difficulty">Difficulty (1 = easy, 5 = hard):</label>
-    <input type="number" id="difficulty" min="1" max="5" value="1" />
+    <label for="difficulty">Difficulty:</label>
+    <select id="difficulty">
+      <option value="1">Easy</option>
+      <option value="3">Medium</option>
+      <option value="5">Hard</option>
+    </select>
 
     <label for="language">Language:</label>
     <select id="language">
@@ -32,9 +38,6 @@
 
   <!-- Screen 2: the actual game board -->
   <section id="game-screen" class="hidden">
-    <!--<p>Word length: <span id="game-word-length"></span></p>
-    <p>Attempt <span id="attempts-used">0</span> of <span id="max-attempts"></span></p> -->
-
     <!-- Full grid of tiles — built dynamically when a game starts -->
     <div id="guess-board"></div>
 

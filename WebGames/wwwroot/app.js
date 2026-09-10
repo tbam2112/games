@@ -8,6 +8,8 @@
 
 // --- Grab references to all the HTML elements we'll need ---
 
+const themeToggle = document.getElementById("theme-toggle");
+
 const setupScreen = document.getElementById("setup-screen");
 const gameScreen = document.getElementById("game-screen");
 const resultScreen = document.getElementById("result-screen");
@@ -30,6 +32,66 @@ const keyboard = document.getElementById("keyboard");
 
 const difficultyInput = document.getElementById("difficulty");
 const languageInput = document.getElementById("language");
+
+// ===========================================================
+// Theme toggle — defaults to the OS preference, but a click
+// stores an explicit override in localStorage.
+// ===========================================================
+
+const prefersDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+function effectiveTheme() {
+  const override = document.documentElement.getAttribute("data-theme");
+  if (override) return override;
+  return prefersDarkQuery.matches ? "dark" : "light";
+}
+
+function updateThemeToggleIcon() {
+  themeToggle.textContent = effectiveTheme() === "dark" ? "☀️" : "🌙";
+  themeToggle.setAttribute(
+    "aria-label",
+    effectiveTheme() === "dark" ? "Switch to light theme" : "Switch to dark theme"
+  );
+}
+
+function applyTheme(theme) {
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.setAttribute("data-theme", theme);
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+  updateThemeToggleIcon();
+}
+
+let savedTheme = null;
+try {
+  savedTheme = localStorage.getItem("theme");
+} catch (err) {
+  // localStorage unavailable (private browsing, etc.) — fall back to OS preference
+}
+applyTheme(savedTheme);
+
+themeToggle.addEventListener("click", () => {
+  const nextTheme = effectiveTheme() === "dark" ? "light" : "dark";
+  applyTheme(nextTheme);
+  try {
+    localStorage.setItem("theme", nextTheme);
+  } catch (err) {
+    // ignore — theme just won't persist across reloads
+  }
+
+  // Don't leave keyboard focus on this button — the game reads keydown
+  // events (Enter/Backspace/letters) on the whole document, and a focused
+  // button intercepts Enter as its own "click" instead of submitting a guess.
+  themeToggle.blur();
+});
+
+// Keep the icon in sync if the OS theme changes and there's no manual override
+prefersDarkQuery.addEventListener("change", () => {
+  if (!document.documentElement.getAttribute("data-theme")) {
+    updateThemeToggleIcon();
+  }
+});
 
 // --- App state ---
 
@@ -113,11 +175,6 @@ startButton.addEventListener("click", () => {
 
   if (isNaN(wordLength) || wordLength < 3 || wordLength > 15) {
     setupError.textContent = "Please enter a word length between 3 and 15.";
-    return;
-  }
-
-  if (isNaN(difficulty) || difficulty < 1 || difficulty > 5) {
-    setupError.textContent = "Please enter a difficulty between 1 and 5.";
     return;
   }
 
@@ -293,7 +350,7 @@ function buildKeyboard() {
   const rows = [
     ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
     ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-    ["z", "x", "c", "v", "b", "n", "m"],
+    ["enter", "z", "x", "c", "v", "b", "n", "m", "backspace"],
   ];
 
   keyboard.innerHTML = "";
@@ -305,8 +362,27 @@ function buildKeyboard() {
     for (const letter of row) {
       const key = document.createElement("div");
       key.className = "key";
-      key.textContent = letter;
       key.id = `key-${letter}`;
+
+      if (letter === "enter") {
+        key.classList.add("key-wide");
+        key.textContent = "Enter";
+        key.addEventListener("click", () => {
+          if (isAcceptingInput) submitGuess();
+        });
+      } else if (letter === "backspace") {
+        key.classList.add("key-wide");
+        key.textContent = "⌫";
+        key.addEventListener("click", () => {
+          if (isAcceptingInput) deleteLetter();
+        });
+      } else {
+        key.textContent = letter;
+        key.addEventListener("click", () => {
+          if (isAcceptingInput) typeLetter(letter);
+        });
+      }
+
       rowDiv.appendChild(key);
     }
 

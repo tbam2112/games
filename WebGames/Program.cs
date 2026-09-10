@@ -4,7 +4,10 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient<IWordProvider, DictionaryWordProvider>();
+builder.Services.AddHttpClient<IWordProvider, DictionaryWordProvider>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 builder.Services.AddSingleton<WordGameService>();
 
 // builder.Services.ConfigureHttpJsonOptions(options =>

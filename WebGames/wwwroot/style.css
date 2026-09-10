@@ -1,12 +1,96 @@
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --muted-text: #565758;
+
+  --tile-border: #d3d6da;
+  --tile-active-border: #878a8c;
+  --tile-filled-border: #565758;
+
+  --key-bg: #d3d6da;
+  --key-bg-hover: #bbc0c4;
+  --key-text: #1a1a1a;
+
+  --error: #d93025;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121213;
+    --text: #f1f1f1;
+    --muted-text: #b0b3b5;
+
+    --tile-border: #3a3a3c;
+    --tile-active-border: #878a8c;
+    --tile-filled-border: #a8abad;
+
+    --key-bg: #818384;
+    --key-bg-hover: #9aa0a3;
+    --key-text: #ffffff;
+
+    --error: #ff6b6b;
+  }
+}
+
+/* Manual override via the theme toggle button, wins in both directions */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #121213;
+  --text: #f1f1f1;
+  --muted-text: #b0b3b5;
+
+  --tile-border: #3a3a3c;
+  --tile-active-border: #878a8c;
+  --tile-filled-border: #a8abad;
+
+  --key-bg: #818384;
+  --key-bg-hover: #9aa0a3;
+  --key-text: #ffffff;
+
+  --error: #ff6b6b;
+}
+
 body {
   font-family: Arial, sans-serif;
   max-width: 500px;
   margin: 40px auto;
   text-align: center;
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .hidden {
   display: none;
+}
+
+/* Manual light/dark theme switch, pinned to the top right */
+#theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--tile-border);
+  background-color: var(--key-bg);
+  color: var(--key-text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#theme-toggle:hover {
+  background-color: var(--key-bg-hover);
 }
 
 #record {
@@ -15,7 +99,7 @@ body {
 }
 
 .error {
-  color: red;
+  color: var(--error);
 }
 
 /* A single row of letter tiles representing one guess */
@@ -36,8 +120,9 @@ body {
   font-size: 20px;
   font-weight: bold;
   text-transform: uppercase;
-  border: 2px solid #ccc;
+  border: 2px solid var(--tile-border);
   border-radius: 4px;
+  color: var(--text);
 }
 
 /* Color-coded feedback, matching the LetterResult enum from the backend */
@@ -99,18 +184,32 @@ body {
   text-transform: uppercase;
   border: none;
   border-radius: 4px;
-  background-color: #d3d6da; /* default — not yet used */
-  color: black;
-  cursor: default; /* not clickable yet, just a visual tracker */
+  background-color: var(--key-bg);
+  color: var(--key-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.key:hover {
+  background-color: var(--key-bg-hover);
+}
+
+/* Enter / Backspace keys are wider than a single letter key */
+.key-wide {
+  width: 60px;
+  font-size: 12px;
+  text-transform: none;
 }
 
 /* Reuse the same color classes as the tiles */
 .key.tile-correct {
-  /* color: white; */
+  background-color: #6aaa64; /* match correct tile color */
+  color: white;
 }
 
 .key.tile-present {
-  /* color: white; */
+  background-color: #c9b458; /* match present tile color */
+  color: white;
 }
 
 .key.tile-absent {
@@ -129,10 +228,10 @@ body {
 
 /* Active tile — the one the cursor is currently on */
 .tile-active {
-  border-color: #888;
+  border-color: var(--tile-active-border);
 }
 
 /* Filled tile — has a letter but not yet submitted */
 .tile-filled {
-  border-color: #333;
+  border-color: var(--tile-filled-border);
 }

@@ -65,7 +65,14 @@ public class DictionaryWordProvider : IWordProvider
         {
             var url = $"https://api.dictionaryapi.dev/api/v2/entries/en/{Uri.EscapeDataString(word)}";
             var response = await _http.GetAsync(url, ct);
-            return response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode) return true;
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
+
+            // Any other status (rate limiting, gateway timeouts, etc.) means the
+            // dictionary service itself is unavailable, not that the word is
+            // invalid — fail open rather than rejecting a possibly-valid guess.
+            return true;
         }
         catch
         {
