@@ -23,9 +23,9 @@ public static class WordGameEndpoints
         });
 
         // Submit a guess for an in-progress game
-        app.MapPost("/api/games/{id}/guess", async (Guid id, GuessRequest request, WordGameService games) =>
+        app.MapPost("/api/games/{id}/guess", (Guid id, GuessRequest request, WordGameService games) =>
         {
-            var (success, error, results) = await games.SubmitGuessAsync(id, request.Guess);
+            var (success, error, results) = games.SubmitGuess(id, request.Guess);
 
             if (!success)
             {

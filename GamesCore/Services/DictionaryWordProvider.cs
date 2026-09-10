@@ -7,7 +7,6 @@ public interface IWordProvider
     // difficulty: 1 (easy) to 5 (hard), matches the random-word-api ?diff param
     // language: "en" (English) or "es" (Spanish)
     Task<string> GetRandomWordAsync(int length, int difficulty = 1, string language = "en", CancellationToken ct = default);
-    Task<bool> IsRealWordAsync(string word, CancellationToken ct = default);
 }
 
 public class DictionaryWordProvider : IWordProvider
@@ -57,27 +56,6 @@ public class DictionaryWordProvider : IWordProvider
         }
 
         return GetFallbackWord(length);
-    }
-
-    public async Task<bool> IsRealWordAsync(string word, CancellationToken ct = default)
-    {
-        try
-        {
-            var url = $"https://api.dictionaryapi.dev/api/v2/entries/en/{Uri.EscapeDataString(word)}";
-            var response = await _http.GetAsync(url, ct);
-
-            if (response.IsSuccessStatusCode) return true;
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return false;
-
-            // Any other status (rate limiting, gateway timeouts, etc.) means the
-            // dictionary service itself is unavailable, not that the word is
-            // invalid — fail open rather than rejecting a possibly-valid guess.
-            return true;
-        }
-        catch
-        {
-            return true;
-        }
     }
 
     private string GetFallbackWord(int length)

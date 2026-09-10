@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient<IWordProvider, DictionaryWordProvider>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(5);
+    client.Timeout = TimeSpan.FromSeconds(2);
 });
 builder.Services.AddSingleton<WordGameService>();
 

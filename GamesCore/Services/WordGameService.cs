@@ -39,8 +39,7 @@ public async Task<Game> StartGameAsync(int wordLength, int difficulty = 1, strin
 
     public Game? GetGame(Guid id) => _games.TryGetValue(id, out var game) ? game : null;
 
-    public async Task<(bool success, string? error, LetterResult[]? results)> SubmitGuessAsync(
-        Guid gameId, string guess, CancellationToken ct = default)
+    public (bool success, string? error, LetterResult[]? results) SubmitGuess(Guid gameId, string guess)
     {
         if (!_games.TryGetValue(gameId, out var game))
         {
@@ -62,16 +61,6 @@ public async Task<Game> StartGameAsync(int wordLength, int difficulty = 1, strin
         if (!guess.All(char.IsLetter))
         {
             return (false, "Guess must contain only letters.", null);
-        }
-
-        // If the guess is the target word it's always valid — skip the API call
-        if (guess != game.TargetWord)
-        {
-            var isReal = await _wordProvider.IsRealWordAsync(guess, ct);
-            if (!isReal)
-            {
-                return (false, "Not a recognized word.", null);
-            }
         }
 
         var results = ScoreGuess(guess, game.TargetWord);
