@@ -13,7 +13,7 @@ Games/
 │   ├── Resources/       #   bundled data, e.g. the local word list
 │   └── ...
 ├── WebGames/            # ASP.NET Core web app — hosts the games in-browser
-├── MobileGames/         # Mobile app (TBD) — same games, mobile-formatted UI
+├── MobileGames/         # .NET MAUI app (Android/iOS/Mac Catalyst) — same games, mobile UI, offline
 ├── LocalGames/          # Downloadable desktop app (TBD) — playable offline
 └── README.md
 ```
@@ -35,7 +35,7 @@ accounts/stats stay consistent across platforms.
 
 | Game | Status | Description |
 |------|--------|--------------|
-| Word Game | 🚧 In progress | A Wordle-style word-guessing game. Pick a word length (3-15 letters), guess within `length + 1` attempts, get per-letter feedback (correct / present / absent). |
+| Word Game | 🚧 In progress (web, mobile) | A Wordle-style word-guessing game. Pick a word length (3-15 letters), guess within `length + 1` attempts, get per-letter feedback (correct / present / absent). |
 
 More games to come.
 
@@ -72,6 +72,29 @@ dotnet run
 The app starts at the URLs configured in `Properties/launchSettings.json`
 (`http://localhost:5013` / `https://localhost:7056` by default).
 
+## MobileGames — Running locally
+
+A .NET MAUI app that runs the game logic on the device through `GamesCore`
+(no server needed, playable offline). Requires the .NET SDK plus the MAUI
+workload, and the platform toolchain for whatever you're targeting — Xcode
+for iOS / Mac Catalyst, the Android SDK for Android:
+
+```bash
+dotnet workload install maui
+cd MobileGames
+dotnet build -t:Run -f net10.0-ios            # iOS simulator (macOS only)
+dotnet build -t:Run -f net10.0-maccatalyst    # as a Mac app (macOS only)
+dotnet build -t:Run -f net10.0-android        # Android emulator/device
+```
+
+Or open `Games.slnx` in Visual Studio / Rider and run the `MobileGames`
+project. Note that building the whole solution needs the MAUI workload
+installed; `WebGames` alone still builds without it (`cd WebGames && dotnet run`).
+
+The mobile Word Game supports word length 3-15 and Easy/Medium/Hard, with an
+on-screen keyboard and light/dark theme. English only for now (see
+`TODO.md` — Spanish guess validation isn't working yet).
+
 ## Word Game API
 
 | Method | Route | Description |
@@ -93,7 +116,7 @@ to a small local word list if that API is unreachable.
 - [x] Word Game frontend (web)
 - [ ] User accounts / auth, Guest → registered upgrade path
 - [ ] Friends, high scores, stats, sharing
-- [ ] `MobileGames` app
+- [ ] `MobileGames` app — Word Game started (.NET MAUI), not yet run on a device
 - [ ] `LocalGames` desktop app with offline support
 - [ ] Additional games (TBD)
 

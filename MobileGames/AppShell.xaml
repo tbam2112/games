@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MobileGames.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:MobileGames.Pages"
+    Title="Games">
+
+    <ShellContent
+        Title="Totally Not Wordle"
+        ContentTemplate="{DataTemplate pages:WordGamePage}"
+        Route="WordGame" />
+
+</Shell>

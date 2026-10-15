@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MobileGames.ViewModels"
+             x:Class="MobileGames.Pages.WordGamePage"
+             x:DataType="vm:WordGameViewModel"
+             Title="Totally Not Wordle"
+             BackgroundColor="{AppThemeBinding Light={StaticResource GameBackgroundLight}, Dark={StaticResource GameBackgroundDark}}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="ThemeToggle" Clicked="OnThemeToggleClicked" />
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+        <SolidColorBrush x:Key="TileBorderLightBrush" Color="{StaticResource TileBorderLight}" />
+        <SolidColorBrush x:Key="TileBorderDarkBrush" Color="{StaticResource TileBorderDark}" />
+        <SolidColorBrush x:Key="TileActiveBorderBrush" Color="{StaticResource TileActiveBorder}" />
+        <SolidColorBrush x:Key="TileFilledBorderLightBrush" Color="{StaticResource TileFilledBorderLight}" />
+        <SolidColorBrush x:Key="TileFilledBorderDarkBrush" Color="{StaticResource TileFilledBorderDark}" />
+        <SolidColorBrush x:Key="TileCorrectBrush" Color="{StaticResource TileCorrect}" />
+        <SolidColorBrush x:Key="TilePresentBrush" Color="{StaticResource TilePresent}" />
+        <SolidColorBrush x:Key="TileAbsentBrush" Color="{StaticResource TileAbsent}" />
+
+        <Style x:Key="GameLabel" TargetType="Label">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource GameTextLight}, Dark={StaticResource GameTextDark}}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="ErrorLabel" TargetType="Label" BasedOn="{StaticResource GameLabel}">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ErrorLight}, Dark={StaticResource ErrorDark}}" />
+        </Style>
+
+        <!-- One letter tile; colored by TileViewModel.State -->
+        <Style x:Key="TileBorder" TargetType="Border">
+            <Setter Property="StrokeThickness" Value="2" />
+            <Setter Property="StrokeShape" Value="Rectangle" />
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileBorderLightBrush}, Dark={StaticResource TileBorderDarkBrush}}" />
+            <Style.Triggers>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Border" Binding="{Binding State}" Value="{x:Static vm:TileState.Active}">
+                    <Setter Property="Stroke" Value="{StaticResource TileActiveBorderBrush}" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Border" Binding="{Binding State}" Value="{x:Static vm:TileState.Filled}">
+                    <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource TileFilledBorderLightBrush}, Dark={StaticResource TileFilledBorderDarkBrush}}" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Border" Binding="{Binding State}" Value="{x:Static vm:TileState.Correct}">
+                    <Setter Property="Stroke" Value="{StaticResource TileCorrectBrush}" />
+                    <Setter Property="BackgroundColor" Value="{StaticResource TileCorrect}" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Border" Binding="{Binding State}" Value="{x:Static vm:TileState.Present}">
+                    <Setter Property="Stroke" Value="{StaticResource TilePresentBrush}" />
+                    <Setter Property="BackgroundColor" Value="{StaticResource TilePresent}" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Border" Binding="{Binding State}" Value="{x:Static vm:TileState.Absent}">
+                    <Setter Property="Stroke" Value="{StaticResource TileAbsentBrush}" />
+                    <Setter Property="BackgroundColor" Value="{StaticResource TileAbsent}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Letters turn white once a tile is scored -->
+        <Style x:Key="TileLetter" TargetType="Label">
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource GameTextLight}, Dark={StaticResource GameTextDark}}" />
+            <Style.Triggers>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Label" Binding="{Binding State}" Value="{x:Static vm:TileState.Correct}">
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Label" Binding="{Binding State}" Value="{x:Static vm:TileState.Present}">
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:TileViewModel" TargetType="Label" Binding="{Binding State}" Value="{x:Static vm:TileState.Absent}">
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- On-screen keyboard key; colored by KeyViewModel.State (best result so far) -->
+        <Style x:Key="KeyButton" TargetType="Button">
+            <Setter Property="HeightRequest" Value="52" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource KeyBackgroundLight}, Dark={StaticResource KeyBackgroundDark}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource KeyTextLight}, Dark={StaticResource KeyTextDark}}" />
+            <Style.Triggers>
+                <DataTrigger x:DataType="vm:KeyViewModel" TargetType="Button" Binding="{Binding IsWide}" Value="True">
+                    <Setter Property="FontSize" Value="12" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:KeyViewModel" TargetType="Button" Binding="{Binding State}" Value="{x:Static vm:TileState.Correct}">
+                    <Setter Property="BackgroundColor" Value="{StaticResource TileCorrect}" />
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:KeyViewModel" TargetType="Button" Binding="{Binding State}" Value="{x:Static vm:TileState.Present}">
+                    <Setter Property="BackgroundColor" Value="{StaticResource TilePresent}" />
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+                <DataTrigger x:DataType="vm:KeyViewModel" TargetType="Button" Binding="{Binding State}" Value="{x:Static vm:TileState.Absent}">
+                    <Setter Property="BackgroundColor" Value="{StaticResource TileAbsent}" />
+                    <Setter Property="TextColor" Value="White" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid Padding="8">
+
+        <!-- Setup: pick a word length and difficulty -->
+        <ScrollView IsVisible="{Binding IsSetupVisible}">
+            <VerticalStackLayout Spacing="16" Padding="16,24" MaximumWidthRequest="420">
+                <Label Style="{StaticResource GameLabel}" Text="Choose your game" FontSize="22" FontAttributes="Bold" />
+
+                <Label Style="{StaticResource GameLabel}" Text="{Binding WordLength, StringFormat='Word length: {0} letters'}" />
+                <Stepper Minimum="3" Maximum="15" Increment="1" Value="{Binding WordLength}" HorizontalOptions="Center" />
+
+                <Label Style="{StaticResource GameLabel}" Text="Difficulty" />
+                <Picker ItemsSource="{Binding Difficulties}" SelectedItem="{Binding SelectedDifficulty}" HorizontalOptions="Center" WidthRequest="200" />
+
+                <Button Text="Start Game" Command="{Binding StartCommand}" HorizontalOptions="Center" WidthRequest="200" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                <Label Style="{StaticResource ErrorLabel}" Text="{Binding SetupError}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Game: board on top, message, then keyboard (or the result once the game ends) -->
+        <Grid IsVisible="{Binding IsPlaying}" RowDefinitions="*,Auto,Auto" RowSpacing="8"
+              SizeChanged="OnGameAreaSizeChanged">
+
+            <ScrollView x:Name="BoardScroll" Grid.Row="0">
+                <VerticalStackLayout x:Name="Board" BindableLayout.ItemsSource="{Binding Rows}"
+                                     Spacing="{Binding TileSpacing}" HorizontalOptions="Center" VerticalOptions="Center">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RowViewModel">
+                            <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Tiles}" HorizontalOptions="Center"
+                                                   Spacing="{Binding Spacing}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TileViewModel">
+                                        <Border Style="{StaticResource TileBorder}" WidthRequest="{Binding Size}" HeightRequest="{Binding Size}">
+                                            <Label Style="{StaticResource TileLetter}" Text="{Binding Letter}" FontSize="{Binding FontSize}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <Label Grid.Row="1" Style="{StaticResource ErrorLabel}" Text="{Binding Message}" />
+
+            <VerticalStackLayout Grid.Row="2" IsVisible="{Binding IsKeyboardVisible}" Spacing="6"
+                                 BindableLayout.ItemsSource="{Binding KeyboardRows}" HorizontalOptions="Center" Padding="0,0,0,8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:KeyboardRowViewModel">
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Keys}" Spacing="4" HorizontalOptions="Center">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:KeyViewModel">
+                                    <Button Style="{StaticResource KeyButton}" Text="{Binding Label}" WidthRequest="{Binding Width}"
+                                            Command="{Binding PressCommand}" CommandParameter="{Binding Key}" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Row="2" IsVisible="{Binding IsGameOver}" Spacing="10" Padding="0,0,0,16">
+                <Label Style="{StaticResource GameLabel}" Text="{Binding ResultHeading}" FontSize="24" FontAttributes="Bold" />
+                <Label Style="{StaticResource GameLabel}" Text="{Binding ResultWord}" FontSize="18" />
+                <Label Style="{StaticResource GameLabel}" Text="{Binding Record}" />
+                <Button Text="Play again (same settings)" Command="{Binding StartCommand}" HorizontalOptions="Center" />
+                <Button Text="Change settings" Command="{Binding ChangeSettingsCommand}" HorizontalOptions="Center" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

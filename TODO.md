@@ -7,8 +7,23 @@ up context quickly without re-deriving it from git log.
 
 ### Word Game (web)
 - [ ] UI polish — layout, spacing, visual design pass
+- [ ] Spanish games are unwinnable in practice: the target word comes from the
+      API in Spanish, but guesses are validated against the English-only
+      `words.txt` (e.g. "perro", "gato", "casa" are all rejected). Needs a
+      Spanish word list, or skip validation for `es`. MobileGames leaves the
+      language option out until this is fixed.
+
+### Word Game (mobile — `MobileGames`, .NET MAUI)
+- [ ] First run on a real device / simulator — never built for Android or iOS
+      yet (the cloud session can't download the Android SDK); only the
+      `net10.0` compile and view-model behavior have been verified
+- [ ] App icon and splash screen are still the MAUI template's (.NET logo,
+      purple `#512BD4`)
+- [ ] Physical keyboard input (e.g. Bluetooth keyboard / Mac Catalyst) — only
+      the on-screen keyboard works today
+- [ ] Persist wins/losses across launches (in memory only, same as web)
+
 ### New platforms (not started)
-- [ ] `MobileGames`
 - [ ] `LocalGames` (desktop, offline-first — needs local storage that syncs
       when a connection is available)
 
@@ -29,6 +44,19 @@ up context quickly without re-deriving it from git log.
   are common and all present in the bundled `words.txt`, so they're always
   guessable. Verified by running the app with the API unreachable and winning a
   game at each length 9-15 with a fallback word.
+- Started `MobileGames`: a .NET MAUI app (Android, iOS, Mac Catalyst) for the
+  Word Game. Game logic runs on the device through `GamesCore`'s
+  `WordGameService`, so it plays offline (target word falls back to the bundled
+  list without a connection). Mirrors the web game: word length 3-15,
+  Easy/Medium/Hard, per-letter tile colors, on-screen keyboard with best-result
+  key colors, wins/losses record, light/dark theme with a toolbar toggle that
+  persists. Tiles and keys size to the screen width so a 15-letter row fits a
+  phone. Result is shown under the final board instead of a separate screen.
+  - Verified: compiled against MAUI's plain `net10.0` target (XAML source-gen
+    checks every binding — 0 warnings), and a scratch harness drove
+    `WordGameViewModel` through typing, deletion, invalid guesses, scoring,
+    keyboard colors, win, loss, play-again, and 15-letter layout (24/24 pass).
+  - Not verified: an actual Android/iOS build or run (see Open).
 
 ### 2026-09-09
 Word Game (web) MVP polish pass:
