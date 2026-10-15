@@ -7,11 +7,6 @@ up context quickly without re-deriving it from git log.
 
 ### Word Game (web)
 - [ ] UI polish — layout, spacing, visual design pass
-- [ ] `GetRandomWordAsync`'s fallback list (`DictionaryWordProvider.FallbackWords`)
-      only covers lengths 3-8; longer games silently fall back to the closest
-      length instead of the requested one. Guess *validation* already covers
-      3-15 via the bundled word list — this is only the target-word-selection
-      fallback used when `random-word-api.herokuapp.com` is unreachable.
 ### New platforms (not started)
 - [ ] `MobileGames`
 - [ ] `LocalGames` (desktop, offline-first — needs local storage that syncs
@@ -26,6 +21,14 @@ up context quickly without re-deriving it from git log.
 - [ ] Sharing (results, achievements, invites)
 
 ## Recap
+
+### 2026-10-15
+- Target-word fallback list (`DictionaryWordProvider.FallbackWords`) now covers
+  every supported length, 3-15 (was 3-8; 9-15 letter games silently got a
+  shorter word when `random-word-api.herokuapp.com` was unreachable). New words
+  are common and all present in the bundled `words.txt`, so they're always
+  guessable. Verified by running the app with the API unreachable and winning a
+  game at each length 9-15 with a fallback word.
 
 ### 2026-09-09
 Word Game (web) MVP polish pass:

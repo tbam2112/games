@@ -23,6 +23,13 @@ public class DictionaryWordProvider : IWordProvider
         [6] = new[] { "puzzle", "garden", "monkey", "planet", "rocket", "yellow", "bridge" },
         [7] = new[] { "freedom", "amazing", "kitchen", "journey", "diamond", "captain" },
         [8] = new[] { "computer", "elephant", "mountain", "sandwich", "umbrella" },
+        [9] = new[] { "adventure", "beautiful", "butterfly", "chocolate", "dangerous", "wonderful" },
+        [10] = new[] { "basketball", "friendship", "helicopter", "motorcycle", "restaurant", "strawberry" },
+        [11] = new[] { "celebration", "environment", "grasshopper", "imagination", "photography", "temperature" },
+        [12] = new[] { "championship", "construction", "conversation", "encyclopedia", "intelligence", "neighborhood" },
+        [13] = new[] { "communication", "entertainment", "extraordinary", "international", "investigation", "understanding" },
+        [14] = new[] { "accomplishment", "administration", "characteristic", "recommendation", "responsibility", "transportation" },
+        [15] = new[] { "electromagnetic", "hospitalization", "instrumentation", "personification", "rationalization", "straightforward" },
     };
 
     public DictionaryWordProvider(HttpClient http)
